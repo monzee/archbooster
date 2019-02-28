@@ -1,0 +1,8 @@
+apply plugin: 'java-library'
+
+sourceCompatibility = "8"
+targetCompatibility = "8"
+
+dependencies {
+    implementation "androidx.annotation:annotation:1.0.1"
+}
