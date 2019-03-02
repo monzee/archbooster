@@ -67,7 +67,6 @@ public interface Many<T> extends Higher<Many, T> {
                 Trampoline<T> iter = new Trampoline<>();
                 iter.value = head;
                 iter.next = tail;
-                Many<T> nil = Case::nil;
                 while (iter.next != null) {
                     delegate.next(iter.value);
                     iter.next.forEach(iter);

@@ -35,14 +35,14 @@ public final class Comprehension<M, T> {
         return then(monad.unit(value));
     }
 
-    public <S, U> Comprehension<M, U> liftFold(
+    public <S, U> Comprehension<M, U> liftThen(
             S value,
             Function2<? super T, ? super S, ? extends U> accumulate
     ) {
         return mapFold(delay(value), accumulate);
     }
 
-    public <S> Comprehension<M, T> liftFold(
+    public <S> Comprehension<M, T> liftAlso(
             S value,
             Consumer2<? super T, ? super S> accumulate
     ) {
@@ -66,11 +66,11 @@ public final class Comprehension<M, T> {
         return flatMapFold(t -> monad.unit(next.apply(t)), accumulate);
     }
 
-    public <S> Comprehension<M, T> mapFold(
+    public <S> Comprehension<M, T> mapThen(
             Function1<? super T, ? extends S> next,
             Consumer2<? super T, ? super S> accumulate
     ) {
-        return flatMapFold(t -> monad.unit(next.apply(t)), accumulate);
+        return flatMapThen(t -> monad.unit(next.apply(t)), accumulate);
     }
 
     public <U> Comprehension<M, U> then(Higher<M, U> next) {
@@ -122,7 +122,7 @@ public final class Comprehension<M, T> {
         ));
     }
 
-    public <S> Comprehension<M, T> flatMapFold(
+    public <S> Comprehension<M, T> flatMapThen(
             Function1<? super T, Higher<M, S>> next,
             Consumer2<? super T, ? super S> accumulate
     ) {

@@ -4,9 +4,7 @@ package ph.codeia.archbooster;
  * This file is a part of the arch-booster project.
  */
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -62,24 +60,20 @@ public class PublishLiveData<T> extends MutableLiveData<T> {
 
     @Override
     public void removeObserver(@NonNull Observer<? super T> observer) {
-        Wrapper wrapper = wrapperByObserver.remove(observer);
+        Wrapper wrapper;
+        // direct call by client
+        if (!(observer instanceof PublishLiveData.Wrapper)) {
+            wrapper = wrapperByObserver.remove(observer);
+        }
+        // virtual call by parent
+        else {
+            //noinspection unchecked
+            wrapper = (Wrapper) observer;
+            wrapperByObserver.remove(wrapper.observer);
+        }
         if (wrapper != null) {
             super.removeObserver(wrapper);
         }
-    }
-
-    @Override
-    public void removeObservers(@NonNull LifecycleOwner owner) {
-        List<Observer> keysToRemove = new ArrayList<>();
-        for (Map.Entry<Observer, Wrapper> entry : wrapperByObserver.entrySet()) {
-            if (entry.getValue().owner == owner) {
-                keysToRemove.add(entry.getKey());
-            }
-        }
-        for (Observer key : keysToRemove) {
-            wrapperByObserver.remove(key);
-        }
-        super.removeObservers(owner);
     }
 
     @Override

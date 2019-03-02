@@ -72,7 +72,7 @@ implements Free.Case<Algebra, T>, Algebra.Case<Free<Algebra, T>> {
             printLine "your name?"
             name <- readLine
             printLine $ "hello, " ++ name ++ "!"
-            toUpper name
+            return $ toUpper name
          */
         String result = interpret(Free.of(Algebra.KIND, monad -> monad
                 .from(printLine("your name?"))
@@ -95,6 +95,8 @@ interface Algebra<T> extends Higher<Algebra, T> {
     Kind KIND = new Kind();
 
     final class Kind implements Functor<Algebra> {
+        private Kind() {}
+
         @Override
         public <T, U> Algebra<U> map(
                 Higher<Algebra, T> source,
@@ -112,8 +114,6 @@ interface Algebra<T> extends Higher<Algebra, T> {
                 }
             });
         }
-
-        private Kind() {}
     }
 
     static <T> Algebra<T> of(Higher<Algebra, T> hk) {

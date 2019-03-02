@@ -5,6 +5,7 @@ package ph.codeia.archbooster.demo;
  */
 
 import ph.codeia.archbooster.experiments.Many;
+import ph.codeia.archbooster.experiments.typeclass.MonadPlus;
 
 public class ListMonad {
     private static class Triple {
@@ -15,10 +16,12 @@ public class ListMonad {
             this.z = z;
         }
     }
+
     public static void main(String[] args) {
-        Many.KIND.from(Range.from(1))
-                .flatMap(z -> Many.KIND.from(Range.between(2, z))
-                        .flatMap(x -> Many.KIND.from(Range.between(x + 1, z))
+        MonadPlus<Many> m = Many.KIND;
+        m.from(Range.from(1))
+                .flatMap(z -> m.from(Range.between(2, z))
+                        .flatMap(x -> m.from(Range.between(x + 1, z))
                                 .filter(y -> x*x + y*y == z*z)
                                 .map(y -> new Triple(x, y, z))
                                 .yield())

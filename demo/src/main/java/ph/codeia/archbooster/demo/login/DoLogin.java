@@ -23,14 +23,14 @@ public class DoLogin implements UseCase.Concurrent<Login.Model, Console> {
     }
 
     @Override
-    public Operation<Ref<Login.Model>, Console> from(Login.Model state) {
+    public Operation<Ref<Login.Model>, Console> from(Login.Model prev) {
         return (states, events) -> {
-            if (state.tag() != Login.State.READY) {
+            if (prev.tag() != Login.State.READY) {
                 return;
             }
-            state.tag(Login.State.LOGGING_IN);
+            prev.tag(Login.State.LOGGING_IN);
             states.emit(Ref.notifyChanged());
-            tryLogin.exec(state.username(), state.password()).run(token -> {
+            tryLogin.exec(prev.username(), prev.password()).run(token -> {
                 events.emit(Console.log("logged in; token='%s'", token));
                 states.emit(Ref.deref(current -> {
                     if (current.tag() != Login.State.LOGGING_IN) {
