@@ -12,7 +12,7 @@ import ph.codeia.archbooster.function.Predicate1;
 public class DoActivate implements UseCase<Login.Model, Void> {
 
     public interface Factory {
-        DoActivate with(Login.Field field);
+        DoActivate activate(Login.Field field);
     }
 
     public static Factory of(Predicate1<String> isEmail) {

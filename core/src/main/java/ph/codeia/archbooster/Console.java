@@ -9,8 +9,8 @@ public interface Console extends Emitter<Console.Event> {
 
     interface Event {
         void log(Throwable error, String text, Object... fmtArgs);
+        void debug(String text, Object... fmtArgs);
         void echo(String text);
-        void clear();
 
         default void dispatch(Console command) {
             if (command != null) {
@@ -19,12 +19,12 @@ public interface Console extends Emitter<Console.Event> {
         }
     }
 
-    static Console log(Throwable error) {
-        return log(error, "");
+    static Console debug(String text, Object... fmtArgs) {
+        return event -> event.debug(text, fmtArgs);
     }
 
-    static Console log(String text, Object... fmtArgs) {
-        return log(null, text, fmtArgs);
+    static Console log(Throwable error) {
+        return log(error, "");
     }
 
     static Console log(Throwable error, String text, Object... fmtArgs) {
@@ -37,6 +37,4 @@ public interface Console extends Emitter<Console.Event> {
             event.echo(message);
         };
     }
-
-    Console CLEAR = Event::clear;
 }

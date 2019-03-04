@@ -22,6 +22,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import ph.codeia.archbooster.AndroidConsole;
 import ph.codeia.archbooster.Console;
+import ph.codeia.archbooster.Emitter;
 import ph.codeia.archbooster.Global;
 import ph.codeia.archbooster.LifecycleBinder;
 import ph.codeia.archbooster.LiveRef;
@@ -47,12 +48,17 @@ public class UnidirectionalLoginFragment extends Fragment {
         );
         ViewModel vm = ViewModelProviders.of(requireActivity()).get(ViewModel.class);
         LifecycleBinder live = new LifecycleBinder(getViewLifecycleOwner());
-        live.bind(vm.state, form);
+        live.bind(form.username, Observers.pipe(Object::toString, vm::setUsername));
+        live.bind(form.password, Observers.pipe(Object::toString, vm::setPassword));
+        live.bindOnce(form.login, () -> {
+            vm.activate();
+            live.bind(form.login, vm::login);
+        });
+        live.bind(vm.messages, AndroidConsole.from(requireContext(), "Login"));
+        live.bind(vm.state, form.renderer);
         live.bind(vm.state, Observers.where(Login.Model::isLoggedIn, state -> {
             // TODO do something with state.token()
         }));
-        live.bind(vm.messages, AndroidConsole.from(requireContext(), "Login"));
-        form.connect(live, vm);
         return root;
     }
 
@@ -74,7 +80,7 @@ public class UnidirectionalLoginFragment extends Fragment {
 
         @Override
         public void activate(Login.Field field) {
-            activator.with(field).from(state.getValue()).run(state::setValue);
+            activator.activate(field).from(state.getValue()).run(state::setValue);
         }
 
         @Override
@@ -88,53 +94,45 @@ public class UnidirectionalLoginFragment extends Fragment {
         }
     }
 
-    private static class Form implements Observer<Login.Model> {
-        final TextView username;
-        final TextView password;
-        final Button login;
+    private static class Form  {
+        final LiveData<CharSequence> username;
+        final LiveData<CharSequence> password;
+        final LiveData<Void> login;
+        final Observer<Login.Model> renderer;
 
         Form(TextView username, TextView password, Button login) {
-            this.username = username;
-            this.password = password;
-            this.login = login;
+            this.username = LiveView.textChanges(username);
+            this.password = LiveView.textChanges(password);
+            this.login = LiveView.clicks(login);
+            renderer = render(username, password, login);
         }
 
-        void connect(LifecycleBinder live, Login.Input input) {
-            live.bind(LiveView.textChanges(username),
-                    Observers.pipe(Object::toString, input::setUsername));
-            live.bind(LiveView.textChanges(password),
-                    Observers.pipe(Object::toString, input::setPassword));
-            LiveData loginClicks = LiveView.clicks(login);
-            live.bindOnce(loginClicks, () -> {
-                input.activate();
-                live.bind(loginClicks, input::login);
-            });
-        }
-
-        @Override
-        public void onChanged(Login.Model state) {
-            switch (state.tag()) {
-                case FAILED:
-                    throw state.failure();
-                case LOGGED_IN:
-                    return;
-                case LOGGING_IN:
-                    username.setEnabled(false);
-                    password.setEnabled(false);
-                    // fallthrough
-                case ACTIVE:
-                case INVALID:
-                    login.setEnabled(false);
-                    break;
-                case INACTIVE:
-                case READY:
-                    username.setEnabled(true);
-                    password.setEnabled(true);
-                    login.setEnabled(true);
-                    break;
-            }
-            username.setError(state.error(Login.Field.USERNAME));
-            password.setError(state.error(Login.Field.PASSWORD));
+        private static Observer<Login.Model>
+        render(TextView username, TextView password, Button login) {
+            return state -> {
+                switch (state.tag()) {
+                    case FAILED:
+                        throw state.failure();
+                    case LOGGED_IN:
+                        return;
+                    case LOGGING_IN:
+                        username.setEnabled(false);
+                        password.setEnabled(false);
+                        // fallthrough
+                    case ACTIVE:
+                    case INVALID:
+                        login.setEnabled(false);
+                        break;
+                    case INACTIVE:
+                    case READY:
+                        username.setEnabled(true);
+                        password.setEnabled(true);
+                        login.setEnabled(true);
+                        break;
+                }
+                username.setError(state.error(Login.Field.USERNAME));
+                password.setError(state.error(Login.Field.PASSWORD));
+            };
         }
     }
 }

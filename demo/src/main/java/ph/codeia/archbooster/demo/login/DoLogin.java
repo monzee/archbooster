@@ -31,7 +31,7 @@ public class DoLogin implements UseCase.Concurrent<Login.Model, Console> {
             prev.tag(Login.State.LOGGING_IN);
             states.emit(Ref.notifyChanged());
             tryLogin.exec(prev.username(), prev.password()).run(token -> {
-                events.emit(Console.log("logged in; token='%s'", token));
+                events.emit(Console.debug("logged in; token='%s'", token));
                 states.emit(Ref.deref(current -> {
                     if (current.tag() != Login.State.LOGGING_IN) {
                         return;

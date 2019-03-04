@@ -175,9 +175,27 @@ public class PublishLiveDataTest implements LifecycleOwner {
         sender.observe(this, r1::set);
         sender.observe(this, r2::set);
 
+        life.markState(Lifecycle.State.CREATED);
         assertTrue(sender.hasObservers());
         life.markState(Lifecycle.State.DESTROYED);
 
         assertFalse(sender.hasObservers());
+    }
+
+    @Test
+    public void obs_does_not_receive_the_value_again_on_the_next_active_cycle() {
+        PublishLiveData<Object> sender = new PublishLiveData<>();
+        AtomicReference<Object> receiver = new AtomicReference<>();
+        Object o = new Object();
+
+        life.markState(Lifecycle.State.STARTED);
+        sender.observe(this, receiver::set);
+        sender.setValue(o);
+        assertEquals(o, receiver.get());
+
+        life.markState(Lifecycle.State.CREATED);
+        receiver.set(null);
+        life.markState(Lifecycle.State.STARTED);
+        assertNull(receiver.get());
     }
 }

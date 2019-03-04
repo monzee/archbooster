@@ -14,7 +14,7 @@ import androidx.lifecycle.Observer;
 public abstract class AndroidConsole implements Console.Event {
 
     public static Observer<Console> from(Context context, String tag) {
-        return from(context, tag, Log.INFO);
+        return from(context, tag, Log.DEBUG);
     }
 
     public static Observer<Console> from(Context context, String tag, int logLevel) {
@@ -36,38 +36,41 @@ public abstract class AndroidConsole implements Console.Event {
     }
 
     public AndroidConsole(String tag) {
-        this(tag, Log.INFO);
+        this(tag, Log.DEBUG);
     }
 
     @Override
     public void log(Throwable error, String text, Object... fmtArgs) {
+        if (Log.isLoggable(tag, logLevel)) {
+            Log.e(tag, String.format(text, fmtArgs), error);
+        }
+    }
+
+    @Override
+    public void debug(String text, Object... fmtArgs) {
         if (!Log.isLoggable(tag, logLevel)) {
             return;
         }
         String message = String.format(text, fmtArgs);
         switch (logLevel) {
             case Log.VERBOSE:
-                Log.v(tag, message, error);
+                Log.v(tag, message);
                 break;
             case Log.DEBUG:
-                Log.d(tag, message, error);
+                Log.d(tag, message);
                 break;
             case Log.INFO:
-                Log.i(tag, message, error);
+                Log.i(tag, message);
                 break;
             case Log.WARN:
-                Log.w(tag, message, error);
+                Log.w(tag, message);
                 break;
             case Log.ERROR:
-                Log.e(tag, message, error);
+                Log.e(tag, message);
                 break;
             case Log.ASSERT:
-                Log.wtf(tag, message, error);
+                Log.wtf(tag, message);
                 break;
         }
-    }
-
-    @Override
-    public void clear() {
     }
 }

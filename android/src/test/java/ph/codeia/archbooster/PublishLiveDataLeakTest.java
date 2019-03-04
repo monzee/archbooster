@@ -91,10 +91,10 @@ public class PublishLiveDataLeakTest {
         ReferenceQueue<Observer<Object>> q = new ReferenceQueue<>();
         PhantomReference<Observer<Object>> ref = new PhantomReference<>(obs, q);
 
-        owner.life.markState(Lifecycle.State.STARTED);
+        owner.activate();
         sender.observe(owner, obs);
 
-        owner.life.markState(Lifecycle.State.DESTROYED);
+        owner.destroy();
         obs = null;
         assertNotNull(gc(q));
     }
@@ -105,10 +105,10 @@ public class PublishLiveDataLeakTest {
         ReferenceQueue<LifecycleOwner> q = new ReferenceQueue<>();
         PhantomReference<LifecycleOwner> ref = new PhantomReference<>(o, q);
 
-        o.life.markState(Lifecycle.State.STARTED);
+        o.activate();
         sender.observe(o, noop());
 
-        o.life.markState(Lifecycle.State.DESTROYED);
+        o.destroy();
         o = null;
         assertNotNull(gc(q));
     }
@@ -130,6 +130,14 @@ public class PublishLiveDataLeakTest {
         @Override
         public Lifecycle getLifecycle() {
             return life;
+        }
+
+        void activate() {
+            life.markState(Lifecycle.State.STARTED);
+        }
+
+        void destroy() {
+            life.markState(Lifecycle.State.DESTROYED);
         }
     }
 }
