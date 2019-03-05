@@ -93,6 +93,23 @@ public class PublishLiveDataTest implements LifecycleOwner {
     }
 
     @Test
+    public void obs_does_not_receive_the_value_again_on_the_next_active_cycle() {
+        PublishLiveData<Object> sender = new PublishLiveData<>();
+        AtomicReference<Object> receiver = new AtomicReference<>();
+        Object o = new Object();
+
+        life.markState(Lifecycle.State.STARTED);
+        sender.observe(this, receiver::set);
+        sender.setValue(o);
+        assertEquals(o, receiver.get());
+
+        life.markState(Lifecycle.State.CREATED);
+        receiver.set(null);
+        life.markState(Lifecycle.State.STARTED);
+        assertNull(receiver.get());
+    }
+
+    @Test
     public void can_send_object_to_multiple_receivers() {
         PublishLiveData<Object> sender = new PublishLiveData<>();
         AtomicReference<Object> r1 = new AtomicReference<>();
@@ -180,22 +197,5 @@ public class PublishLiveDataTest implements LifecycleOwner {
         life.markState(Lifecycle.State.DESTROYED);
 
         assertFalse(sender.hasObservers());
-    }
-
-    @Test
-    public void obs_does_not_receive_the_value_again_on_the_next_active_cycle() {
-        PublishLiveData<Object> sender = new PublishLiveData<>();
-        AtomicReference<Object> receiver = new AtomicReference<>();
-        Object o = new Object();
-
-        life.markState(Lifecycle.State.STARTED);
-        sender.observe(this, receiver::set);
-        sender.setValue(o);
-        assertEquals(o, receiver.get());
-
-        life.markState(Lifecycle.State.CREATED);
-        receiver.set(null);
-        life.markState(Lifecycle.State.STARTED);
-        assertNull(receiver.get());
     }
 }

@@ -33,8 +33,8 @@ import androidx.lifecycle.Observer;
  * or {@link #setValue(Object)}.
  *
  * <p> If the observer is added and a value is set while the owner is inactive
- * (but not destroyed), the observer will receive the value when the owner
- * becomes active.
+ * (stopped but not destroyed), the observer will receive the value when the
+ * owner becomes active.
  *
  * <p> This implementation is better than the aforementioned {@code SingleLiveEvent}
  * because this allows multiple observers in the same cycle to receive the
@@ -42,7 +42,7 @@ import androidx.lifecycle.Observer;
  * forget about it. The thing it touts as an advantage (handling vs. peeking)
  * is not. You shouldn't have to make a distinction between those two. It just
  * forces you to arbitrarily assign one observer as _the_ handler and relegate
- * others to an "on-looker" status and it also adds noise to the types and the
+ * others to an "on-looker" status. It also adds noise to the types and the
  * observer body.
  *
  * @param <T> The type of the observable data
@@ -54,7 +54,7 @@ public class PublishLiveData<T> extends MutableLiveData<T> {
     /**
      * Newly added observers will never receive the current value; otherwise
      * behaves the same as below.
-     * <p></p>
+     * <br><br>
      * {@inheritDoc}
      */
     @Override

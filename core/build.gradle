@@ -1,8 +1,69 @@
-apply plugin: 'java-library'
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
 
 sourceCompatibility = "8"
 targetCompatibility = "8"
 
-dependencies {
-    implementation "androidx.annotation:annotation:1.0.1"
+javadoc {
+    title = "ArchBooster"
+    options {
+        links "https://developer.android.com/reference"
+        encoding "UTF-8"
+    }
+}
+
+task jarSources(type: Jar, dependsOn: "classes", group: "publishing") {
+    classifier "sources"
+    from sourceSets.main.allSource
+}
+
+task jarJavadoc(type: Jar, dependsOn: "javadoc", group: "publishing") {
+    classifier "javadoc"
+    from javadoc.destinationDir
+}
+
+publishing {
+    repositories.maven {
+        name "bintray"
+        url "https://api.bintray.com/maven/monzee/jvm/archbooster-core/"
+        credentials {
+            username = BINTRAY_USER
+            password = BINTRAY_API_KEY
+        }
+    }
+
+    publications {
+        core(MavenPublication) {
+            from components.java
+            artifact jarSources
+            artifact jarJavadoc
+            pom {
+                name = "ArchBooster Core"
+                description = "Supporting interfaces for ArchBooster"
+                developers {
+                    developer {
+                        id = "monzee"
+                        name = "Mon Zafra"
+                        email = "mz@codeia.ph"
+                        organization = "Codeia Inc."
+                        organizationUrl = "https://codeia.ph"
+                    }
+                }
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://mit-license.org/license.txt"
+                        distribution = "repo"
+                    }
+                }
+                scm {
+                    url = "https://github.com/monzee/archbooster"
+                    connection = "scm:git:https://github.com/monzee/archbooster.git"
+                    developerConnection = "scm:git:ssh://git@github.com:monzee/archbooster.git"
+                }
+            }
+        }
+    }
 }

@@ -1,4 +1,14 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "digital.wup:android-maven-publish:3.6.2"
+    }
+}
+
 apply plugin: 'com.android.library'
+apply plugin: 'digital.wup.android-maven-publish'
 
 android {
     compileSdkVersion 28
@@ -28,3 +38,77 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:2.0.0"
 }
 
+publishing {
+    repositories.maven {
+        name 'bintray'
+        url 'https://api.bintray.com/maven/monzee/jvm/archbooster-android/'
+        credentials {
+            username = BINTRAY_USER
+            password = BINTRAY_API_KEY
+        }
+    }
+
+    android.libraryVariants.matching { it.buildType.name == 'release' }.all {
+        def stem = name.capitalize()
+
+        def docs = tasks.register("javadoc$stem", Javadoc) {
+            group 'documentation'
+            dependsOn ':core:javadoc'
+
+            source android.sourceSets.main.java.sourceFiles
+            classpath += javaCompileProvider.get().classpath + files(android.bootClasspath)
+            title 'Android ArchBooster'
+            options {
+                links '../../../../archbooster-core/build/docs/javadoc'
+                links 'https://developer.android.com/reference'
+            }
+            exclude '**/BuildConfig.java'
+            exclude '**/R.java'
+        }
+
+        def docsJar = tasks.register("jar${stem}Javadoc", Jar) {
+            group 'publishing'
+            dependsOn docs
+            from docs.get().destinationDir
+            classifier 'javadoc'
+        }
+
+        def sourceJar = tasks.register("jar${stem}Sources", Jar) {
+            group 'publishing'
+            from sourceSets.java.srcDirs
+            classifier 'sources'
+        }
+
+        publications.register(name, MavenPublication) {
+            from components.android
+            artifact sourceJar.get()
+            artifact docsJar.get()
+            pom {
+                name = 'Android ArchBooster'
+                description = 'The missing parts of the Android Architecture Components'
+                url = 'https://github.com/monzee/archbooster'
+                developers {
+                    developer {
+                        id = 'monzee'
+                        name = 'Mon Zafra'
+                        email = 'mz@codeia.ph'
+                        organization = 'Codeia Inc'
+                        organizationUrl = 'https://codeia.ph'
+                    }
+                }
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://mit-license.org/license.txt'
+                        distribution = 'repo'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/monzee/archbooster'
+                    connection = 'scm:git:https://github.com/monzee/archbooster.git'
+                    developerConnection = 'scm:git:ssh://git@github.com:monzee/archbooster.git'
+                }
+            }
+        }
+    }
+}

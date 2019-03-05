@@ -4,6 +4,10 @@ package ph.codeia.archbooster;
  * This file is a part of the arch-booster project.
  */
 
+/**
+ *
+ * @param <T> The type of the wrapped reference
+ */
 public interface Ref<T> extends Emitter<Ref.Event<T>> {
 
     interface Event<T> extends Emitter<Ref<T>> {
@@ -13,11 +17,13 @@ public interface Ref<T> extends Emitter<Ref.Event<T>> {
         void notifyChanged();
 
         /**
+         * @param t The new value
          * @see Ref#swap(Object)
          */
         void swap(T t);
 
         /**
+         * @param block The function to run in the main thread
          * @see Ref#deref(Emitter)
          */
         void deref(Emitter<? super T> block);
