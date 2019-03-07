@@ -9,7 +9,7 @@ dependencies {
     implementation "ph.codeia.archbooster:android:$version"
 }
 ```
-where `$version` is the number shown at the badge above.
+where `$version` is the number shown in the badge above.
 
 ## Usage
 
@@ -21,8 +21,8 @@ implementation of that idea.
 
 This class extends `MutableLiveData`, so you can use this exactly as you would
 a `MutableLiveData`. Typically you'd have a `ViewModel` with a private field
-with a getter exposing it as `LiveData` and you'd have some other method that
-feeds value into the field.
+with a getter exposing it as `LiveData` and you'd have some other methods that
+feed values into the field.
 
 ```java
 public class CounterModel extends ViewModel {
@@ -46,8 +46,9 @@ public class CounterModel extends ViewModel {
 }
 ```
 
-See the `demo` module for examples and reasoning when to use this over plain
-`MutableLiveData`.
+This example doesn't really make sense because the state is something you want
+to emit at subscription time. See the `app` module for concrete examples on how
+it might be used.
 
 
 ### LiveView
